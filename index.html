@@ -926,6 +926,8 @@
         </div>
 
         <div class="actions">
+          <!-- Nút quản trị mới, mặc định ẩn, chỉ hiện khi đăng nhập admin -->
+          <button class="btn" id="btnAdmin" style="display:none">🛠 Quản trị</button> 
           <button class="btn" id="btnInv">📦 Kho</button>
           <button class="btn" id="btnStats">📊 Thống kê</button>
           <button class="btn" id="btnLogin">Đăng nhập</button>
@@ -1228,6 +1230,7 @@
           </div>
 
           <!-- INVENTORY -->
+           
           <div id="invView" style="display:none;">
             <div class="invTop">
               <div>
@@ -1241,6 +1244,7 @@
                 <button class="btn" id="invOut"><span class="invTag">🔴 Hết</span></button>
               </div>
             </div>
+            
 
             <div class="invTableWrap">
               <table class="inv">
@@ -1263,6 +1267,53 @@
               * Gợi ý: Khi bạn “Đặt đơn”, hệ thống demo sẽ tự trừ tồn kho theo giỏ.
             </div>
           </div>
+
+          <!-- MÀN HÌNH QUẢN TRỊ (CRUD) -->
+<div id="adminView" style="display:none;">
+  <div class="card" style="padding:15px; margin-top:12px; background: #f8fbff; border: 1px dashed var(--brand);">
+    <div class="h2" id="adminFormTitle">Thêm sản phẩm mới</div>
+    <div class="form" style="margin-top:12px;">
+      <input type="hidden" id="adId"> <!-- Dùng để sửa -->
+      <div class="field"><label>Tên sản phẩm</label><input id="adName"></div>
+      <div class="field">
+        <label>Danh mục</label>
+        <select id="adCat">
+          <option value="crab">Cua • Ghẹ</option>
+          <option value="salmon">Cá hồi</option>
+          <option value="shrimp">Tôm các loại</option>
+          <option value="sushi">Sushi & Sashimi</option>
+          <option value="rte">Món chế biến sẵn (RTE)</option>
+          <option value="squid">Mực các loại</option>
+          <option value="oyster">Hàu sữa</option>
+          <option value="shell">Ngao • Sò • Ốc</option>
+          <option value="import">Hải sản nhập khẩu</option>
+          <option value="sauce">Gia vị • Sốt</option>
+          <option value="frozen">Hải sản đông lạnh</option>
+        </select>
+      </div>
+      <div class="field"><label>Giá bán (đ)</label><input type="number" id="adPrice"></div>
+      <div class="field"><label>Tồn kho</label><input type="number" id="adStock"></div>
+      <div class="field">
+        <label>Hình ảnh (Chọn file trong folder img)</label>
+        <input type="file" id="adImgFile" accept="image/*">
+        <!-- Dùng để hiển thị tên ảnh đang có khi Sửa -->
+        <input type="hidden" id="adImgPath"> 
+      </div>
+      <div class="field full">
+        <button class="btn primary" id="btnSaveProd">Lưu sản phẩm</button>
+        <button class="btn" id="btnCancelEdit" style="display:none">Hủy</button>
+      </div>
+    </div>
+  </div>
+  <div class="invTableWrap" style="margin-top:15px; max-height:300px; overflow:auto;">
+    <table class="inv">
+      <thead>
+        <tr><th>ID</th><th>Tên</th><th>Giá</th><th>Kho</th><th>Thao tác</th></tr>
+      </thead>
+      <tbody id="adminTbody"></tbody>
+    </table>
+  </div>
+</div>
 
           <!-- PRODUCT DETAIL POPUP (NEW) -->
           <div id="productDetailView" style="display:none;">
@@ -1393,20 +1444,21 @@
     ];
 
     // ===== PRODUCTS + STOCK =====
-    const PRODUCTS = [
-      { id:"p1",  cat:"crab",   name:"Cua Hoàng Đế Đỏ (King Crab)",  unit:"Nauy / 1 Kg", price:2790000, old:2900000, sold:7942, tag:"sale", stock: 100, img: "img/cuahoangde.jpg" },
-      { id:"p2",  cat:"rte",    name:"Sứa sốt Thái",                 unit:"Phần",        price:75000,   old:85000,   sold:6818, tag:"sale", stock: 180, img: "img/suasotthai.jpg" },
-      { id:"p3",  cat:"rte",    name:"Sứa & Bạch tuộc sốt Thái",     unit:"Phần",        price:89000,   old:110000,  sold:1087, tag:"sale", stock: 50, img: "img/bachtuoc.jpg" },
-      { id:"p4",  cat:"salmon", name:"Đuôi cá hồi phi lê tươi",      unit:"Khay 200g",   price:115000,  old:null,    sold:6044, tag:"best", stock: 500, img: "img/cahoi.jpg" },
-      { id:"p5",  cat:"squid",  name:"Mực sữa",                      unit:"Khay 500g",   price:129000,  old:null,    sold:2998, tag:"best", stock: 100, img: "img/mucsua.jpg" },
-      { id:"p6",  cat:"squid",  name:"Mực ống trứng",                unit:"Khay 500g",   price:269000,  old:null,    sold:728,  tag:"best", stock: 90, img: "img/muctrung.jpg" },
-      { id:"p7",  cat:"oyster", name:"Hàu sữa size M (tươi)",        unit:"Khay 1Kg",    price:189000,  old:225000,  sold:2151, tag:"sale", stock: 120, img: "img/hausua.jpg" },
-      { id:"p8",  cat:"shrimp", name:"Tôm sú sống (size 20)",        unit:"Khay 1Kg",    price:259000,  old:299000,  sold:1333, tag:"sale", stock: 70, img: "img/tomsusong.jpg" },
-      { id:"p9",  cat:"shell",  name:"Nghêu trắng tươi",             unit:"Khay 1Kg",    price:79000,   old:null,    sold:1680, tag:"best", stock: 100, img: "img/ngheu.jpg" },
-      { id:"p10", cat:"import", name:"Bào ngư (nhập khẩu)",          unit:"Hộp 500g",    price:399000,  old:450000,  sold:512,  tag:"sale", stock: 100, img: "img/baongu.jpg" },
-      { id:"p11", cat:"sushi",  name:"Sashimi cá hồi (combo)",       unit:"Khay",        price:229000,  old:null,    sold:980,  tag:"best", stock: 100, img: "img/sashimi.jpg" },
-      { id:"p12", cat:"sauce",  name:"Sốt bơ tỏi hải sản",           unit:"Chai 250ml",  price:69000,   old:null,    sold:2100, tag:"best", stock: 140, img: "img/sotbotoi.jpg" },
-    ];
+    // Đọc dữ liệu từ máy nếu đã có, nếu chưa thì lấy danh sách mặc định
+let PRODUCTS = JSON.parse(localStorage.getItem('sea_products')) || [
+  { id:"p1",  cat:"crab",   name:"Cua Hoàng Đế Đỏ (King Crab)",  unit:"Nauy / 1 Kg", price:2790000, old:2900000, sold:7942, tag:"sale", stock: 100, img: "img/cuahoangde.jpg" },
+  { id:"p2",  cat:"rte",    name:"Sứa sốt Thái",                 unit:"Phần",        price:75000,   old:85000,   sold:6818, tag:"sale", stock: 180, img: "img/suasotthai.jpg" },
+  { id:"p3",  cat:"rte",    name:"Sứa & Bạch tuộc sốt Thái",     unit:"Phần",        price:89000,   old:110000,  sold:1087, tag:"sale", stock: 50, img: "img/bachtuoc.jpg" },
+  { id:"p4",  cat:"salmon", name:"Đuôi cá hồi phi lê tươi",      unit:"Khay 200g",   price:115000,  old:null,    sold:6044, tag:"best", stock: 500, img: "img/cahoi.jpg" },
+  { id:"p5",  cat:"squid",  name:"Mực sữa",                      unit:"Khay 500g",   price:129000,  old:null,    sold:2998, tag:"best", stock: 100, img: "img/mucsua.jpg" },
+  { id:"p6",  cat:"squid",  name:"Mực ống trứng",                unit:"Khay 500g",   price:269000,  old:null,    sold:728,  tag:"best", stock: 90, img: "img/muctrung.jpg" },
+  { id:"p7",  cat:"oyster", name:"Hàu sữa size M (tươi)",        unit:"Khay 1Kg",    price:189000,  old:225000,  sold:2151, tag:"sale", stock: 120, img: "img/hausua.jpg" },
+  { id:"p8",  cat:"shrimp", name:"Tôm sú sống (size 20)",        unit:"Khay 1Kg",    price:259000,  old:299000,  sold:1333, tag:"sale", stock: 70, img: "img/tomsusong.jpg" },
+  { id:"p9",  cat:"shell",  name:"Nghêu trắng tươi",             unit:"Khay 1Kg",    price:79000,   old:null,    sold:1680, tag:"best", stock: 100, img: "img/ngheu.jpg" },
+  { id:"p10", cat:"import", name:"Bào ngư (nhập khẩu)",          unit:"Hộp 500g",    price:399000,  old:450000,  sold:512,  tag:"sale", stock: 100, img: "img/baongu.jpg" },
+  { id:"p11", cat:"sushi",  name:"Sashimi cá hồi (combo)",       unit:"Khay",        price:229000,  old:null,    sold:980,  tag:"best", stock: 100, img: "img/sashimi.jpg" },
+  { id:"p12", cat:"sauce",  name:"Sốt bơ tỏi hải sản",           unit:"Chai 250ml",  price:69000,   old:null,    sold:2100, tag:"best", stock: 140, img: "img/sotbotoi.jpg" },
+];
 
     // ===== Auth =====
     const AUTH_KEY="sea_mart_user";
@@ -1493,7 +1545,7 @@
       return list.filter(p=>p.cat===activeCat);
     }
 
-    function productCard(p){
+   function productCard(p){
       const per = discountPercent(p);
       const soldMax = 8000;
       const prog = Math.max(6, Math.min(100, Math.round((p.sold / soldMax) * 100)));
@@ -1547,15 +1599,27 @@
         </div>
       `;
 
-      // SỬA LẠI: Nút xem mở Popup Modal thay vì alert
-      wrap.querySelector(`[data-view="${p.id}"]`).addEventListener("click",(e)=>{
+      // 1. SỬA LẠI: Click vào bất cứ đâu trên thẻ (wrap) đều mở Detail
+      wrap.addEventListener("click", (e) => {
         ripple(e);
         openModal('detail', p.id);
       });
 
+      // 2. Nút xem (Thêm stopPropagation để tránh chạy sự kiện 2 lần)
+      const viewBtn = wrap.querySelector(`[data-view="${p.id}"]`);
+      if(viewBtn) {
+        viewBtn.addEventListener("click", (e) => {
+          e.stopPropagation(); // Ngăn nổi bọt để không trigger click của wrap
+          ripple(e);
+          openModal('detail', p.id);
+        });
+      }
+
+      // 3. Nút Thêm (QUAN TRỌNG: Thêm stopPropagation)
       const addBtn = wrap.querySelector(`[data-add="${p.id}"]`);
       if(addBtn){
-        addBtn.addEventListener("click",(e)=>{
+        addBtn.addEventListener("click", (e) => {
+          e.stopPropagation(); // CHẶN: Không cho mở detail khi bấm nút Thêm
           ripple(e);
           if(!canAdd(p.id)){
             alert("Sản phẩm đã hết tồn hoặc vượt quá tồn kho.");
@@ -1730,15 +1794,26 @@
     const modal = $("#modal");
     let modalMode = "login"; // login | checkout | stats | inv | detail
 
-    function setLoginButton(){
-      const u = getUser();
-      if(!u){ $("#btnLogin").textContent = "Đăng nhập"; return; }
-      $("#btnLogin").textContent = `👤 ${u.name} (Đăng xuất)`;
-    }
+  function setLoginButton(){
+  const u = getUser();
+  if(!u){ 
+    $("#btnLogin").textContent = "Đăng nhập"; 
+    $("#btnAdmin").style.display = "none"; // Ẩn nút quản trị
+    return; 
+  }
+  $("#btnLogin").textContent = `👤 ${u.name} (Đăng xuất)`;
+  
+  // Nếu tên đăng nhập là "admin" thì hiện nút Quản trị
+  if(u.name.toLowerCase() === "admin") {
+    $("#btnAdmin").style.display = "inline-flex";
+  } else {
+    $("#btnAdmin").style.display = "none";
+  }
+}
 
     function setModalMode(mode, productId = null){
       modalMode = mode;
-
+      $("#adminView").style.display = "none";
       $("#qrLeftContainer").style.display = "none"; // Ẩn khung QR bên trái khi reset modal
       // Reset tất cả các view về ẩn
       $("#loginForm").style.display = "none";
@@ -1815,7 +1890,19 @@
         $("#mDis").textContent = "-" + money(t.discount);
         $("#mShip").textContent = money(t.ship);
         $("#mGrand").textContent = money(t.grand);
-      }else{
+      }
+      
+      else if(mode==="admin"){
+       $("#modalLeftTitle").textContent = "Quản trị";
+  $("#modalLeftDesc").textContent = "Chế độ thêm, sửa, xóa sản phẩm. Dữ liệu sẽ lưu vào máy khách.";
+  $("#modalTitle").textContent = "Quản lý sản phẩm";
+  $("#modalDesc").textContent = "Bạn có thể thay đổi thông tin sản phẩm tại đây.";
+  $("#modalPrimary").style.display = "none"; // Ẩn nút mặc định của modal
+  $("#adminView").style.display = "block";
+  renderAdminTable();
+      }
+      
+      else{
         // LOGIN MODE
         $("#modalLeftTitle").textContent = "Tài khoản";
         $("#modalLeftDesc").textContent = "Demo đăng nhập bằng localStorage.";
@@ -2471,6 +2558,130 @@ fetch("products.php")
       console.log(p.name, p.price);
     });
   });
+  // --- Dán đoạn này vào cuối script ---
+
+// Mở modal quản trị
+if($("#btnAdmin")) {
+    $("#btnAdmin").addEventListener("click", () => openModal("admin"));
+}
+
+// Vẽ bảng quản trị
+function renderAdminTable() {
+  const tbody = $("#adminTbody");
+  if(!tbody) return;
+  tbody.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.id}</td>
+      <td><b>${p.name}</b></td>
+      <td>${money(p.price)}</td>
+      <td>${p.stock}</td>
+      <td>
+        <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="editProduct('${p.id}')">Sửa</button>
+        <button class="btn" style="padding:4px 8px; font-size:11px; color:red;" onclick="deleteProduct('${p.id}')">Xóa</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Lưu sản phẩm (Thêm hoặc Sửa)
+if($("#btnSaveProd")) {
+    $("#btnSaveProd").onclick = () => {
+      const id = $("#adId").value;
+      const name = $("#adName").value;
+      const price = parseInt($("#adPrice").value);
+      const stock = parseInt($("#adStock").value);
+      const cat = $("#adCat").value;
+
+      // --- LOGIC XỬ LÝ ẢNH MỚI ---
+      const fileInput = $("#adImgFile");
+      let img = "";
+
+      if (fileInput.files && fileInput.files[0]) {
+        // Nếu có chọn file mới: lấy tên file và ghép với folder img/
+        img = "img/" + fileInput.files[0].name;
+      } else {
+        // Nếu không chọn file mới: 
+        // Nếu đang Sửa thì giữ lại ảnh cũ, nếu Thêm mới thì để ảnh mặc định
+        img = $("#adImgPath").value || "img/default.jpg";
+      }
+      // ---------------------------
+
+      if(!name || !price) return alert("Vui lòng nhập đủ tên và giá!");
+
+      if(id) { // Đang sửa
+        const p = PRODUCTS.find(x => x.id === id);
+        if(p) Object.assign(p, { name, price, stock, cat, img }); // Cập nhật cả ảnh
+      } else { // Thêm mới
+    // 1. Tìm ID lớn nhất hiện tại (ví dụ tìm thấy p12)
+    const maxId = PRODUCTS.reduce((max, p) => {
+        const idNum = parseInt(p.id.replace('p', '')) || 0;
+        return Math.max(max, idNum);
+    }, 0);
+    
+    // 2. Cộng thêm 1 để ra ID mới (ví dụ p13)
+    const newId = "p" + (maxId + 1); 
+
+    PRODUCTS.push({ 
+        id: newId, 
+        name, 
+        price, 
+        stock, 
+        cat, 
+        unit: "1 Kg", 
+        sold: 0, 
+        tag: "best", 
+        img: img,    // QUAN TRỌNG: Dùng biến img lấy từ fileInput đã xử lý
+        old: null    // Giá cũ để mặc định là null
+    });
+}
+
+      // Lưu vào máy
+      localStorage.setItem('sea_products', JSON.stringify(PRODUCTS));
+      renderAdminTable();
+      renderProducts(); // Cập nhật danh sách hiển thị ngoài shop
+      resetAdminForm();
+    };
+}
+
+window.editProduct = (id) => {
+  const p = PRODUCTS.find(x => x.id === id);
+  if(!p) return;
+  $("#adId").value = p.id;
+  $("#adName").value = p.name;
+  $("#adPrice").value = p.price;
+  $("#adStock").value = p.stock;
+  $("#adCat").value = p.cat;
+  $("#adImgPath").value = p.img; // Ẩn input lưu đường dẫn ảnh cũ
+
+  $("#adminFormTitle").textContent = "Sửa sản phẩm: " + p.name;
+  $("#btnCancelEdit").style.display = "inline-flex";
+};
+
+window.deleteProduct = (id) => {
+  if(!confirm("Xác nhận xóa món này?")) return;
+  PRODUCTS = PRODUCTS.filter(x => x.id !== id);
+  localStorage.setItem('sea_products', JSON.stringify(PRODUCTS));
+  renderAdminTable();
+  renderProducts();
+};
+
+function resetAdminForm() {
+  $("#adId").value = ""; 
+  $("#adName").value = ""; 
+  $("#adPrice").value = ""; 
+  $("#adStock").value = "";
+    $("#adImgPath").value = ""; // Xóa trắng path ảnh
+  $("#adImgFile").value = ""; // Xóa trắng ô chọn file
+  $("#adminFormTitle").textContent = "Thêm sản phẩm mới";
+  $("#btnCancelEdit").style.display = "none";
+}
+
+if($("#btnCancelEdit")) {
+    $("#btnCancelEdit").onclick = resetAdminForm;
+} 
 </script>
 <form method="post" action="add_customer.php">
   <input name="name" placeholder="Tên">
